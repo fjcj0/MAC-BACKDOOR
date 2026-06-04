@@ -153,6 +153,25 @@ wssAudio.on("connection", ws => {
     if (ws === browserAudio) browserAudio = null;
   });
 });
+let browserClients = [];
+const ScreenWss = new WebSocket.Server({ host: "0.0.0.0", port: 2025 });
+ScreenWss.on('connection', (ws) => {
+    browserClients.push(ws);
+    ws.on('close', () => {
+        browserClients = browserClients.filter(client => client !== ws);
+    });
+});
+const ScreenServer = new WebSocket.Server({ host: "0.0.0.0", port: 6666 });
+ScreenServer.on('connection', (ws) => {
+    console.log('python connected');
+    ws.on('message', (data) => {
+        browserClients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(data);
+            }
+        });
+    });
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running at: http://0.0.0.0:${PORT}`);
 });
