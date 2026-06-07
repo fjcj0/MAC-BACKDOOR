@@ -9,3 +9,4 @@ sounddevice
 numpy
 TTS==0.22.0
 mss
+pyautogui

